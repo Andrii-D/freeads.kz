@@ -19,7 +19,6 @@ def decode_html(html_string):
         raise UnicodeDecodeError(
             "Failed to detect encoding, tried [%s]",
             ', '.join(converted.triedEncodings))
-    # print converted.originalEncoding
     return converted.unicode
 
 def phonify(phone, code = '7'):
@@ -59,10 +58,6 @@ def get_data(item_url):
     phone2 = "not found"
     subject = "not found"
 
-    # <div class="boxheader"><b>Контактные данные</b></div>
-    # soup.get_text("|", strip=True)
-    # <div class="offerdetail">
-    # <h1>
     for offer in soup.findAll('div', {'class':'offerdetail'}):
         subject = offer.h1.get_text("|", strip=True)[0:-13]
     for boxheader in soup.findAll('div', {'class': 'boxheader'}):
@@ -94,33 +89,3 @@ for page in get_page():
             pretty = phonify(ph, '7')
             if pretty:
                 f.writerow((a, pretty ,d))
-
-        #
-        #
-
-print phonify('+77754012227')
-print phonify('+7 (7222) 42-32-17')
-print phonify('8705-560-71-50')
-print phonify('  8 707-130-22-35')
-print phonify('8-705-167-01-13')
-
-# '+77754012227'
-# '+7 (7222) 42-32-17'
-# '8705-560-71-50'
-# '  8 707-130-22-35'
-# '8-705-167-01-13'
-
-# print get_profile_url('http://repetitory.freeads.kz/ru-i-classifieds-i-page-i-31-4-i-index.html')
-# print get_data("http://almaty.freeads.kz/ru-i-offer-i-id-i-1816605-i-repetitor-po-fizike20141005-093914.html")
-# print get_data("http://almaty.freeads.kz/ru-i-offer-i-id-i-1548283-i-russkij-jazyk-kak-inostrannyj.html")
-# f = csv.writer(open("znania_ru.csv", "wb"))
-# f.writerow(["name", "email", "phone", "subject"])
-#
-# for s in gather_subjects(url, patt1):
-#     for u in gather_urls(s, patt2):
-#         for (a, b, c, d) in get_data(u):
-#             f.writerow((a, b, c, d))
-
-
-
-
