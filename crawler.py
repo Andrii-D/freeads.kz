@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import re
 import requests
 from bs4 import BeautifulSoup
@@ -7,8 +6,16 @@ import lxml
 import csv
 import codecs
 
-
 url = "http://repetitory.freeads.kz/ru-i-classifieds-i-page-i-31-4-i-index.html"
+
+voc = [u'язик',
+       u'скому',
+       u'цкому',
+       u'цкий',
+       u'ский',
+       u'ского',
+       u'цкого',
+        ]
 
 
 from BeautifulSoup import UnicodeDammit
@@ -49,17 +56,30 @@ def get_profile_url(base):
                 yield href
 
 def get_data(item_url):
+
     source_code = requests.get(item_url)
     plain_text = decode_html(source_code.content)
     soup = BeautifulSoup(plain_text)  # windows-1251
 
-    name = "not found"
+    li = item_url.find('.')
+
+    name = " "
     phone1 = "not found"
     phone2 = "not found"
     subject = "not found"
+    languages = False
+    city = item_url[7:li]
+    if city == 'almaty': city = u'Алматы'
+    if city == 'astana': city = u'Астана'
+    if city == 'semipalatinsk': city = u'Семипалатинск'
+
 
     for offer in soup.findAll('div', {'class':'offerdetail'}):
         subject = offer.h1.get_text("|", strip=True)[0:-13]
+    for l in voc:
+        if l in subject.lower():
+            languages = True
+            break
     for boxheader in soup.findAll('div', {'class': 'boxheader'}):
         if u'Контактные' in boxheader.b.string:
             pass
@@ -76,16 +96,18 @@ def get_data(item_url):
                     phone2 = a[1]
 
 
-    return name.encode('utf-8'), phone1.encode('utf-8'), phone2.encode('utf-8'), subject.encode('utf-8')
+    return name.encode('utf-8'), phone1.encode('utf-8'), phone2.encode('utf-8'), subject.encode('utf-8'), languages, city.encode('utf-8')
 
-f = csv.writer(open("kz.csv", "wb"))
-f.writerow(["name", "phone", "subject"])
+f = csv.writer(open("kz3.csv", "wb"))
+f.writerow(["name", "phone", "languages", "city", "subject"])
 
 for page in get_page():
     for pu in get_profile_url(page):
-        a,b,c,d = get_data(pu)
+        a,b,c,d,e,g = get_data(pu)
         phones = b.split(',') + c.split(',')
         for ph in phones:
             pretty = phonify(ph, '7')
             if pretty:
-                f.writerow((a, pretty ,d))
+                f.writerow((a, pretty, e, g, d))
+                # print a, pretty, e, g, d
+
